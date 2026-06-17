@@ -55,6 +55,7 @@ export const ACTIONS = {
   CLEAR_NOTIFICATION: 'CLEAR_NOTIFICATION',
   UPDATE_DURATION: 'UPDATE_DURATION',
   RESET_IDLE: 'RESET_IDLE',
+  CLEAR_TEMP_FIELDS: 'CLEAR_TEMP_FIELDS',
 }
 
 export const reducer = (state, action) => {
@@ -110,13 +111,26 @@ export const reducer = (state, action) => {
       return newState
     }
     case ACTIONS.PAUSE: {
-      newState = { ...state, timerState: TIMER_STATES.PAUSED }
+      newState = {
+        ...state,
+        timerState: TIMER_STATES.PAUSED,
+        pausedAt: new Date().toISOString(),
+      }
       persistState(newState)
       return newState
     }
     case ACTIONS.RESUME: {
       const prevState = state.currentType === SESSION_TYPES.WORK ? TIMER_STATES.RUNNING : TIMER_STATES.BREAK
-      newState = { ...state, timerState: prevState }
+      const remaining = state.remainingSeconds
+      const adjustedStart = new Date(Date.now() - (state.totalSeconds - remaining) * 1000).toISOString()
+      newState = {
+        ...state,
+        timerState: prevState,
+        pausedAt: null,
+        currentSession: state.currentSession
+          ? { ...state.currentSession, started_at: adjustedStart }
+          : null,
+      }
       persistState(newState)
       return newState
     }
@@ -146,6 +160,7 @@ export const reducer = (state, action) => {
         : null
       let newWorkCount = state.workCompletedSinceLongBreak
       if (completed && completed.type === SESSION_TYPES.WORK) newWorkCount++
+      if (completed && completed.type === SESSION_TYPES.LONG_BREAK) newWorkCount = 0
       const nextType = SESSION_TYPES.WORK
       const totalSec = minutesToSeconds(action.payload.settings.workDuration)
       newState = {
@@ -238,6 +253,14 @@ export const reducer = (state, action) => {
         pendingRestore: false,
       }
       persistState(newState)
+      return newState
+    }
+    case ACTIONS.CLEAR_TEMP_FIELDS: {
+      newState = {
+        ...state,
+        _cancelledSessions: undefined,
+        _completedSession: undefined,
+      }
       return newState
     }
     default:

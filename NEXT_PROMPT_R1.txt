@@ -1,1 +1,1 @@
-修 3 个 bug：(1) 取消触发 NotificationManager 死循环（_cancelledSessions 不清，deps 含 sessions，无限追加）；(2) 暂停/继续丢失时长（PAUSE 不改 started_at）；(3) 长休息 interval=2 时第 1 个番茄就触发（handleCompleteAutoBreak 重复计数）。不破坏其他功能。
+有 3 个问题：①点取消时组件进入死循环反复刷新，停不下来。②点暂停后时长丢了，再继续时已用时归零。③长休息设置 2 分钟时，第一个番茄结束后就立刻算长休息开始，重复触发。检查修复一下。

@@ -24,8 +24,14 @@ const App = () => {
   )
 
   const setSessions = useCallback((list) => {
-    setSessionsState(list)
-    saveToStorage(STORAGE_KEYS.SESSIONS, list)
+    const seen = new Set()
+    const unique = list.filter(s => {
+      if (seen.has(s.id)) return false
+      seen.add(s.id)
+      return true
+    }).sort((a, b) => new Date(b.started_at) - new Date(a.started_at))
+    setSessionsState(unique)
+    saveToStorage(STORAGE_KEYS.SESSIONS, unique)
   }, [])
 
   const updateSettings = useCallback((newSettings) => {
@@ -55,7 +61,7 @@ const App = () => {
   const handleSetProject = useCallback((p) => dispatch({ type: ACTIONS.SET_PROJECT, payload: p }), [])
 
   const handleCompleteAutoBreak = useCallback(() => {
-    const total = state.workCompletedSinceLongBreak + 1
+    const total = state.workCompletedSinceLongBreak
     const isLong = total > 0 && total % settings.longBreakInterval === 0
     setTimeout(() => {
       dispatch({
@@ -73,14 +79,6 @@ const App = () => {
   const handleDeleteSession = useCallback((id) => {
     setSessions(sessions.filter(s => s.id !== id))
   }, [sessions, setSessions])
-
-  useEffect(() => {
-    if (state._cancelledSessions && state._cancelledSessions.length > 0) {
-      const list = [...sessions, ...state._cancelledSessions]
-      setSessions(list)
-      dispatch({ type: ACTIONS.CLEAR_NOTIFICATION })
-    }
-  }, [state._cancelledSessions])
 
   useEffect(() => {
     const s = state.timerState

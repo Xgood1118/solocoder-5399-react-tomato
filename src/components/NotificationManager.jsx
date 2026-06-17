@@ -48,7 +48,10 @@ const NotificationManager = ({
     const newList = [...sessions]
     cancelledSessions.forEach(s => newList.push(s))
     setSessions(newList)
-  }, [cancelledSessions, sessions, setSessions])
+    setTimeout(() => {
+      dispatch({ type: ACTIONS.CLEAR_TEMP_FIELDS })
+    }, 0)
+  }, [cancelledSessions, sessions, setSessions, dispatch])
 
   useEffect(() => {
     if (!justCompletedSession) return
@@ -57,7 +60,10 @@ const NotificationManager = ({
     if (justCompletedSession.type === SESSION_TYPES.WORK) {
       setTimeout(() => onCompleteAutoBreak(), 100)
     }
-  }, [justCompletedSession, sessions, setSessions, onCompleteAutoBreak])
+    setTimeout(() => {
+      dispatch({ type: ACTIONS.CLEAR_TEMP_FIELDS })
+    }, 0)
+  }, [justCompletedSession, sessions, setSessions, onCompleteAutoBreak, dispatch])
 
   useEffect(() => {
     if (settings.notificationEnabled && 'Notification' in window && Notification.permission === 'default') {
