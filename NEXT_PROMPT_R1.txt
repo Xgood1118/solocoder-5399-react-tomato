@@ -1,0 +1,1 @@
+修 3 个 bug：(1) 取消触发 NotificationManager 死循环（_cancelledSessions 不清，deps 含 sessions，无限追加）；(2) 暂停/继续丢失时长（PAUSE 不改 started_at）；(3) 长休息 interval=2 时第 1 个番茄就触发（handleCompleteAutoBreak 重复计数）。不破坏其他功能。
